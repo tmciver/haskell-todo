@@ -5,9 +5,13 @@ build-type:    Simple
 
 executable          todo-cli
     hs-source-dirs: app/CLI
+                  , src
     main-is:        Main.hs
     ghc-options:    -Wall -threaded -O2 -rtsopts -with-rtsopts=-N
     extensions:     OverloadedStrings
     build-depends:  base   >= 4      && < 5
                   , scotty
                   , text
+                  , time
+    other-modules: Domain.Todo
+                 , Domain.TodoRepository

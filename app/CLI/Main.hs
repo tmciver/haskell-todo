@@ -18,11 +18,13 @@ getCommand = do
 
 doCommand :: Command
           -> IO ()
-doCommand Quit = return ()
-doCommand _ = main
+doCommand cmd = do
+  putStrLn ("You entered: " ++ (show cmd))
+  case cmd of
+    Quit -> return ()
+    _ -> main
 
 main :: IO ()
 main = do
   cmd <- getCommand
-  putStrLn ("You entered: " ++ (show cmd))
   doCommand cmd

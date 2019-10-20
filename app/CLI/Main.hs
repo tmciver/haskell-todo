@@ -25,6 +25,4 @@ doCommand cmd = do
     _ -> main
 
 main :: IO ()
-main = do
-  cmd <- getCommand
-  doCommand cmd
+main = getCommand >>= doCommand

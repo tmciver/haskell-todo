@@ -18,12 +18,11 @@ getCommand = do
 
 doCommand :: Command
           -> IO ()
+doCommand Quit = return ()
 doCommand _ = main
 
 main :: IO ()
 main = do
   cmd <- getCommand
   putStrLn ("You entered: " ++ (show cmd))
-  if cmd == Quit then
-    return ()
-    else doCommand cmd
+  doCommand cmd

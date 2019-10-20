@@ -19,13 +19,12 @@ getCommand = do
 
 doCommand :: Command
           -> IO ()
-doCommand cmd = case cmd of
-                  Quit -> return ()
-                  Show -> do
-                    todos <- getAll inMemoryTodoRepo
-                    (putStrLn . show) todos
-                    main
-                  _ -> putStrLn "Commmand not yet implemented." >> main
+doCommand Quit = return ()
+doCommand Show = do
+  todos <- getAll inMemoryTodoRepo
+  (putStrLn . show) todos
+  main
+doCommand _ = putStrLn "Commmand not yet implemented." >> main
 
 main :: IO ()
 main = getCommand >>= doCommand

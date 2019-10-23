@@ -1,20 +1,27 @@
 import Domain.TodoRepository
 import Domain.Todo as Todo
 import Data.Time (getCurrentTime, addUTCTime, nominalDay)
-import Data.Text (pack)
+import Data.Text (Text, pack)
 import System.IO
 
 data Command = Create | Show | Quit deriving (Show, Eq)
 
-createTodo :: IO Todo
-createTodo = do
+getDescription :: IO Text
+getDescription = do
   putStr "Enter a description: "
   hFlush stdout
   desc' <- getLine
+  if null desc' then
+    putStrLn "Description must not be empty." >> getDescription
+    else return $ pack desc'
+
+createTodo :: IO Todo
+createTodo = do
+  desc' <- getDescription
   t <- getCurrentTime
   let due' = addUTCTime nominalDay t
   putStrLn "Created todo due one day from today."
-  return $ Todo.create (pack desc') due'
+  return $ Todo.create desc' due'
 
 toCommand :: String
           -> Maybe Command

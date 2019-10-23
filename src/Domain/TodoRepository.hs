@@ -1,6 +1,7 @@
 module Domain.TodoRepository ( TodoRepository
                              , inMemoryTodoRepo
                              , getAll
+                             , save
                              ) where
 
 import Domain.Todo as Todo
@@ -16,15 +17,14 @@ data Repository i a = Repo { getById :: i -> IO (Maybe a)
 
 type TodoRepository = Repository ID Todo
 
-todosSTM :: IO (TVar [Todo])
-todosSTM = do
+inMemoryTodoRepo :: IO TodoRepository
+inMemoryTodoRepo = do
   t <- getCurrentTime
-  newTVarIO [ Todo.create "Buy milk." (addUTCTime nominalDay t)
-            , Todo.create "Dentist's appointment." (addUTCTime nominalDay t)
-            ]
-
-inMemoryTodoRepo :: TodoRepository
-inMemoryTodoRepo = Repo { getById = \_ -> return Nothing
-                        , getAll = todosSTM >>= readTVarIO
-                        , save = \_ -> return ()
-                        }
+  todosTVar <- newTVarIO []
+  let repo = Repo { getById = \_ -> return Nothing
+                  , getAll = readTVarIO todosTVar
+                  , save = \todo -> atomically $ modifyTVar' todosTVar (todo:)
+                  }
+  save repo (Todo.create "Buy milk." (addUTCTime nominalDay t))
+  save repo (Todo.create "Dentist's appointment." (addUTCTime nominalDay t))
+  return repo

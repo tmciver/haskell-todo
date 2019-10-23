@@ -1,6 +1,20 @@
 import Domain.TodoRepository
+import Domain.Todo as Todo
+import Data.Time (getCurrentTime, addUTCTime, nominalDay)
+import Data.Text (pack)
+import System.IO
 
 data Command = Create | Show | Quit deriving (Show, Eq)
+
+createTodo :: IO Todo
+createTodo = do
+  putStr "Enter a description: "
+  hFlush stdout
+  desc' <- getLine
+  t <- getCurrentTime
+  let due' = addUTCTime nominalDay t
+  putStrLn "Created todo due one day from today."
+  return $ Todo.create (pack desc') due'
 
 toCommand :: String
           -> Maybe Command
@@ -17,14 +31,19 @@ getCommand = do
     Just cmd -> return cmd
     Nothing -> putStrLn "Invalid Command." >> getCommand
 
-doCommand :: Command
+doCommand :: TodoRepository
+          -> Command
           -> IO ()
-doCommand Quit = return ()
-doCommand Show = do
-  todos <- getAll inMemoryTodoRepo
+doCommand _ Quit = return ()
+doCommand repo Show = do
+  todos <- getAll repo
   (putStrLn . show) todos
-  main
-doCommand _ = putStrLn "Commmand not yet implemented." >> main
+  loop repo
+doCommand repo Create = createTodo >>= (save repo) >> loop repo
+
+loop :: TodoRepository
+     -> IO ()
+loop repo = getCommand >>= doCommand repo
 
 main :: IO ()
-main = getCommand >>= doCommand
+main = inMemoryTodoRepo >>= loop

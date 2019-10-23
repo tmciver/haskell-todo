@@ -13,5 +13,6 @@ executable          todo-cli
                   , scotty
                   , text
                   , time
+                  , stm
     other-modules: Domain.Todo
                  , Domain.TodoRepository

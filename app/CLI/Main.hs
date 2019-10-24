@@ -5,6 +5,24 @@ import Domain.Todo as Todo
 import Data.Time (getCurrentTime, addUTCTime, nominalDay)
 import Data.Text (Text, pack)
 import System.IO
+import Pipes
+import qualified Pipes.Prelude as P
+
+-- Pipes stuff
+
+commandProducer :: Producer Command IO ()
+commandProducer = do
+  lift $ putStrLn "Enter a command: c (create), s (show); (Ctl-D to quit)"
+  for P.stdinLn (\str -> do
+                    case toCommand str of
+                      Just cmd -> yield cmd
+                      Nothing -> (lift $ putStrLn "Invalid Command.") >> commandProducer)
+
+commandPrinter :: Command
+               -> Effect IO ()
+commandPrinter = lift . putStrLn . show
+
+-- end Pipes stuff
 
 data Command = Create | Show | Quit deriving (Show, Eq)
 
@@ -55,4 +73,5 @@ loop :: TodoRepository
 loop repo = getCommand >>= doCommand repo
 
 main :: IO ()
-main = inMemoryTodoRepo >>= loop
+--main = inMemoryTodoRepo >>= loop
+main = runEffect $ for commandProducer commandPrinter

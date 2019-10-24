@@ -21,7 +21,7 @@ createTodo = do
   t <- getCurrentTime
   let due' = addUTCTime nominalDay t
   putStrLn "Created todo due one day from today."
-  return $ Todo.create desc' due'
+  Todo.create desc' due'
 
 toCommand :: String
           -> Maybe Command

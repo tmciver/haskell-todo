@@ -14,5 +14,6 @@ executable          todo-cli
                   , text
                   , time
                   , stm
+                  , uuid
     other-modules: Domain.Todo
                  , Domain.TodoRepository

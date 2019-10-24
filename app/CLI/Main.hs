@@ -18,9 +18,10 @@ commandProducer = do
                       Just cmd -> yield cmd
                       Nothing -> (lift $ putStrLn "Invalid Command.") >> commandProducer)
 
-commandPrinter :: Command
-               -> Effect IO ()
-commandPrinter = lift . putStrLn . show
+printerConsumer :: Show a
+                => a
+                -> Effect IO ()
+printerConsumer = lift . putStrLn . show
 
 -- end Pipes stuff
 
@@ -74,4 +75,4 @@ loop repo = getCommand >>= doCommand repo
 
 main :: IO ()
 --main = inMemoryTodoRepo >>= loop
-main = runEffect $ for commandProducer commandPrinter
+main = runEffect $ for commandProducer printerConsumer

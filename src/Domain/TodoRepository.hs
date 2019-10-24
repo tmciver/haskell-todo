@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Domain.TodoRepository ( TodoRepository
                              , inMemoryTodoRepo
                              , getAll

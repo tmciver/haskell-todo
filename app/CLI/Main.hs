@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 import Domain.TodoRepository
 import Domain.Todo as Todo
 import Data.Time (getCurrentTime, addUTCTime, nominalDay)

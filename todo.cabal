@@ -3,17 +3,32 @@ version:       0.0.0
 cabal-version: >= 1.8
 build-type:    Simple
 
-executable          todo-cli
-    hs-source-dirs: app/CLI
-                  , src
-    main-is:        Main.hs
+library
+    hs-source-dirs: src
     ghc-options:    -Wall -threaded -O2 -rtsopts -with-rtsopts=-N
-    extensions:     OverloadedStrings
+    exposed-modules: Domain.Todo
+                   , Domain.TodoRepository
     build-depends:  base   >= 4      && < 5
                   , scotty
                   , text
                   , time
                   , stm
                   , uuid
-    other-modules: Domain.Todo
-                 , Domain.TodoRepository
+
+executable          todo-cli
+    hs-source-dirs: app/CLI
+    main-is:        Main.hs
+    ghc-options:    -Wall -threaded -O2 -rtsopts -with-rtsopts=-N
+    build-depends:  base   >= 4      && < 5
+                  , todo
+                  , text
+                  , time
+
+executable          todo-web-scotty
+    hs-source-dirs: app/scotty
+    main-is:        Main.hs
+    ghc-options:    -Wall -threaded -O2 -rtsopts -with-rtsopts=-N
+    build-depends:  base   >= 4      && < 5
+                  , todo
+                  , scotty
+                  , text

@@ -25,7 +25,7 @@ printerConsumer = lift . putStrLn . show
 
 -- end Pipes stuff
 
-data Command = Create | Show | Quit deriving (Show, Eq)
+data Command = Create | Show deriving (Show, Eq)
 
 getDescription :: IO Text
 getDescription = do
@@ -46,7 +46,6 @@ createTodo = do
 
 toCommand :: String
           -> Maybe Command
-toCommand "q" = Just Quit
 toCommand "c" = Just Create
 toCommand "s" = Just Show
 toCommand _ = Nothing
@@ -62,7 +61,6 @@ getCommand = do
 doCommand :: TodoRepository
           -> Command
           -> IO ()
-doCommand _ Quit = return ()
 doCommand repo Show = do
   todos <- getAll repo
   (putStrLn . show) todos

@@ -16,7 +16,7 @@ commandProducer = do
   for P.stdinLn (\str -> do
                     case toCommand str of
                       Just cmd -> yield cmd
-                      Nothing -> (lift $ putStrLn "Invalid Command.") >> commandProducer)
+                      Nothing -> (lift $ putStrLn "Invalid Command.") >> (lift $ hFlush stdout) >> commandProducer)
 
 printerConsumer :: Show a
                 => a

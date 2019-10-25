@@ -32,3 +32,4 @@ executable          todo-web-scotty
                   , todo
                   , scotty
                   , text
+                  , blaze-html

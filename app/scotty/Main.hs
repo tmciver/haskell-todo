@@ -30,18 +30,16 @@ todoForm = H.form H.! method "post" H.! enctype "multipart/form-data" H.! action
 
 createTodo :: Text
            -> ActionM ()
-createTodo desc = do
+createTodo desc' = do
   repo <- env
   t <- liftIO getCurrentTime
-  let due = addUTCTime nominalDay t
-  todo <- liftIO (create desc due)
+  let due' = addUTCTime nominalDay t
+  todo <- liftIO (create desc' due')
   liftIO (save repo todo)
   redirect "/"
 
 handleTodoPost :: ActionM ()
-handleTodoPost = do
-  desc <- param "desc"
-  createTodo desc
+handleTodoPost = param "desc" >>= createTodo
 
 homeLink :: H.Html
 homeLink = ((H.a . H.toHtml) ("Home" :: String)) H.! href "/"

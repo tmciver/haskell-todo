@@ -12,9 +12,6 @@ import Text.Blaze.Html5.Attributes
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Data.Time (getCurrentTime, addUTCTime, nominalDay)
 
-env :: ActionM TodoRepository
-env = liftIO inMemoryTodoRepo
-
 todosHtml :: [Todo] -> H.Html
 todosHtml todos = do
   H.p "Todos:"
@@ -28,18 +25,18 @@ todoForm = H.form H.! method "post" H.! enctype "multipart/form-data" H.! action
   H.br
   H.input H.! type_ "submit" H.! value "Submit"
 
-createTodo :: Text
+createTodo :: TodoRepository
+           -> Text
            -> ActionM ()
-createTodo desc' = do
-  repo <- env
+createTodo repo desc' = do
   t <- liftIO getCurrentTime
   let due' = addUTCTime nominalDay t
   todo <- liftIO (create desc' due')
   liftIO (save repo todo)
   redirect "/"
 
-handleTodoPost :: ActionM ()
-handleTodoPost = param "desc" >>= createTodo
+handleTodoPost :: TodoRepository -> ActionM ()
+handleTodoPost repo = param "desc" >>= createTodo repo
 
 homeLink :: H.Html
 homeLink = ((H.a . H.toHtml) ("Home" :: String)) H.! href "/"
@@ -50,9 +47,8 @@ template title' body' = H.docTypeHtml $ do
     H.title $ fromString $ "Haskell Todo - " ++ title'
   H.body $ homeLink >> H.br >> body'
 
-homeView :: ActionM ()
-homeView = do
-  repo <- env
+homeView :: TodoRepository -> ActionM ()
+homeView repo = do
   todos <- liftIO $ getAll repo
   html $ renderHtml $ homeHtml todos
 
@@ -60,6 +56,8 @@ homeHtml :: [Todo] -> H.Html
 homeHtml todos = template "Home" todoForm >> (todosHtml todos)
 
 main :: IO ()
-main = scotty 3000 $ do
-  get "/" homeView
-  post "/todos" handleTodoPost
+main = do
+  repo <- liftIO inMemoryTodoRepo
+  scotty 3000 $ do
+    get "/" (homeView repo)
+    post "/todos" (handleTodoPost repo)

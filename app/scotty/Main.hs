@@ -19,6 +19,14 @@ todosHtml todos = do
   H.p "Todos:"
   H.ul $ forM_ todos (H.li . fromString . T.unpack . desc)
 
+todoForm :: H.Html
+todoForm = H.form H.! method "post" H.! enctype "multipart/form-data" H.! action "/todos" $ do
+  H.span $ H.toHtml ("Enter a description:" :: Text)
+  H.br
+  H.input H.! type_ "textarea" H.! name "desc"
+  H.br
+  H.input H.! type_ "submit" H.! value "Submit"
+
 homeLink :: H.Html
 homeLink = ((H.a . H.toHtml) ("Home" :: String)) H.! href "/"
 
@@ -35,7 +43,7 @@ homeView = do
   html $ renderHtml $ homeHtml todos
 
 homeHtml :: [Todo] -> H.Html
-homeHtml todos = template "Home" (todosHtml todos)
+homeHtml todos = template "Home" todoForm >> (todosHtml todos)
 
 main :: IO ()
 main = scotty 3000 $ do

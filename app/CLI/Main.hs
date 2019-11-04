@@ -4,7 +4,9 @@ import Domain.TodoRepository
 import Domain.Todo as Todo
 import Data.Time (getCurrentTime, addUTCTime, nominalDay)
 import Data.Text (Text, pack)
-import System.IO
+--import System.IO
+import Control.Monad (unless)
+import System.IO (isEOF, hFlush, stdout)
 import Pipes
 import qualified Pipes.Prelude as P
 
@@ -13,11 +15,13 @@ import qualified Pipes.Prelude as P
 commandProducer :: Producer Command IO ()
 commandProducer = do
   lift $ putStrLn "Enter a command: c (create), s (show); (Ctl-D to quit)" >> hFlush stdout
-  for P.stdinLn (\str -> do
-                    _ <- case toCommand str of
-                           Just cmd -> yield cmd
-                           Nothing -> lift $ putStrLn "Invalid Command." >> hFlush stdout
-                    commandProducer)
+  eof <- lift isEOF
+  unless eof $ do
+    str <- lift getLine
+    case toCommand str of
+      Just cmd -> yield cmd
+      Nothing -> lift $ putStrLn "Invalid Command." >> hFlush stdout
+    commandProducer
 
 commandConsumer :: TodoRepository
                 -> Command
@@ -30,8 +34,7 @@ data Command = Create | Show deriving (Show, Eq)
 
 getDescription :: IO Text
 getDescription = do
-  putStr "Enter a description: "
-  hFlush stdout
+  putStr "Enter a description: " >> hFlush stdout
   desc' <- getLine
   if null desc' then
     putStrLn "Description must not be empty." >> getDescription

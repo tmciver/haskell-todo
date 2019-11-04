@@ -5,8 +5,28 @@ import Domain.Todo as Todo
 import Data.Time (getCurrentTime, addUTCTime, nominalDay)
 import Data.Text (Text, pack)
 import System.IO
+import Pipes
+import qualified Pipes.Prelude as P
 
-data Command = Create | Show | Quit deriving (Show, Eq)
+-- Pipes stuff
+
+commandProducer :: Producer Command IO ()
+commandProducer = do
+  lift $ putStrLn "Enter a command: c (create), s (show); (Ctl-D to quit)" >> hFlush stdout
+  for P.stdinLn (\str -> do
+                    _ <- case toCommand str of
+                           Just cmd -> yield cmd
+                           Nothing -> lift $ putStrLn "Invalid Command." >> hFlush stdout
+                    commandProducer)
+
+commandConsumer :: TodoRepository
+                -> Command
+                -> Effect IO ()
+commandConsumer repo cmd = lift $ doCommand repo cmd
+
+-- end Pipes stuff
+
+data Command = Create | Show deriving (Show, Eq)
 
 getDescription :: IO Text
 getDescription = do
@@ -27,32 +47,19 @@ createTodo = do
 
 toCommand :: String
           -> Maybe Command
-toCommand "q" = Just Quit
 toCommand "c" = Just Create
 toCommand "s" = Just Show
 toCommand _ = Nothing
 
-getCommand :: IO Command
-getCommand = do
-  putStrLn "Enter a command: c (create), s (show), q (quit)"
-  inStr <- getLine
-  case toCommand inStr of
-    Just cmd -> return cmd
-    Nothing -> putStrLn "Invalid Command." >> getCommand
-
 doCommand :: TodoRepository
           -> Command
           -> IO ()
-doCommand _ Quit = return ()
 doCommand repo Show = do
   todos <- getAll repo
   (putStrLn . show) todos
-  loop repo
-doCommand repo Create = createTodo >>= (save repo) >> loop repo
-
-loop :: TodoRepository
-     -> IO ()
-loop repo = getCommand >>= doCommand repo
+doCommand repo Create = createTodo >>= (save repo)
 
 main :: IO ()
-main = inMemoryTodoRepo >>= loop
+main = do
+  repo <- inMemoryTodoRepo
+  runEffect $ for commandProducer (commandConsumer repo)

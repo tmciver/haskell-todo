@@ -23,6 +23,7 @@ executable          todo-cli
                   , todo
                   , text
                   , time
+                  , pipes
 
 executable          todo-web-scotty
     hs-source-dirs: app/scotty
